@@ -1,0 +1,49 @@
+<HTMl>
+    <body>
+        <h1>WELCOME TO CHECKOUT PAGE!</h1>
+        
+        
+        {% if session['cart_item']  %}
+        <p><a id="btnEmpty" href="{{ url_for('.empty_cart') }}" class="btn btn-danger">Empty Cart</a></p>
+        <!-- <form method="POST" action="/calculate"></form>
+        {% for key, val in session['cart_item'].items() %}
+            <label for="title"> {{key}} </label>
+            <input type="hidden" class="price" name="title" value="{{session['cart_item'][key]['price']}}"/>
+            <input type="submit" value="Remove" class="default-btn" /><br>
+        {% endfor%}
+       </form> -->
+       <form form method="POST" action="/calculate" id="td_form"></form>
+       <table>
+           <tr>
+               <th>Product</th>
+               <th>Unit Price</th>
+               <th>Quantity</th>
+               <th>Total Price</th>
+           </tr>
+           {% for key, val in session['cart_item'].items() %}
+            <tr>
+                <tr>
+                    
+                <td>{{session['cart_item'][key]['title']}}</td>
+                <td>{{session['cart_item'][key]['price']}}</td>    
+                <td>{{session['cart_item'][key]['running_qty']}}</td> 
+                <td>{{session['cart_item'][key]['price'] * session['cart_item'][key]['running_qty']}}</td>
+                <td class="col-sm-1 col-md-1">
+                    <a href="{{ url_for('.delete_product', title=session['cart_item'][key]['title']) }}" class="btn btn-danger">
+                        <span class="glyphicon glyphicon-remove"></span> Remove
+                    </a></td>
+            </tr>    
+           {% endfor%}
+           <tr>
+            <td>Sub Total: {{session['total_price']}}</td>
+           </tr>
+       </table>
+
+       {% else: %}
+        <div class="no-records">Your Cart is Empty!</div>
+       {% endif %}
+
+
+       <br><a href="/products">Continue shopping</a>
+    </body>
+</HTMl>

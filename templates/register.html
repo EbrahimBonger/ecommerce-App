@@ -1,20 +1,25 @@
 <html>
   <head>
-    <title>Lab 5 activity</title>
+    <title></title>
   </head>
   <body>
+    <h2>{{message}}</h2>
     <form action="/register" method="POST">
+      <br>
       <label for="fname">First name:</label>
-      <input type="text" id="fname" name="fname"><br>
+      <input type="text" id="fname" name="fname" required><br>
       <label for="lname">Last name:</label>
-      <input type="text" id="lname" name="lname"><br>
+      <input type="text" id="lname" name="lname" required><br>
       <label for="email">Email Address:</label>
-      <input type="text" id="email" name="email"><br>
+      <input type="text" id="email" name="email" required><br>
       <label for="user">UserName:</label>
-      <input type="text" id="user" name="user"><br>
+      <input type="text" id="user" name="user" required><br>
       <label for="pass">Password:</label>
-      <input type="text" id="pass" name="pass"><br>
+      <input type="text" id="pass" name="pass" required><br>
       <input type="submit" value="Submit">
     </form>
+    <button>
+      <a type="button" href="index.html"> Login!</a>
+  </button>
   </body>
 </html>

@@ -1,0 +1,59 @@
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <!-- <meta name="viewport" content="width=device-width">
+    <title>repl.it</title> -->
+    <link href="/static/products.css" rel="stylesheet" type="text/css" />
+  </head>
+
+
+<body>
+
+  <section class="our-publication pt-100 pb-70">
+    <div class="container">
+                <div class="section-header">
+                    <i class="fa fa-book"></i>
+                    <h2>Products</h2>
+                    
+                </div>
+                 
+        <div class="row">
+            
+                <div class="col-sm-6 col-lg-3"> 
+                  {% for key, values in dict.items() %}
+                
+              <label for="category">Category: {{key}} : {{value}} </label><br>   
+              {% for value in values %}
+              <form method="POST" action="/add">
+            
+                <div class="single-publication">
+                
+              <div class="add-to-cart">
+                  <input type="hidden" name="productId" value="{{value[0]}}"/>
+                  <label for="title">{{value[1]}} </label>
+                  <input type="hidden" name="title" value="{{value[1]}}"/>
+                  <input type="number" class="product-quantity" name="quantity" value="" size="2" required/>
+                  <input type="submit" value="Add to Cart" class="default-btn" />
+                </div>
+
+              </div>
+                
+            </form>
+                
+              {% endfor %}
+                  
+            {% endfor %}
+                </div>
+                
+                        
+        </div>
+    </div>
+</section>
+
+<!-- <form method="POST" action="/empty">
+  <input type="submit" value="Empty the Cart" class="default-btn" />
+</form> -->
+<a href="/checkout">Go to Cart</a>
+  </body>
+</html>
