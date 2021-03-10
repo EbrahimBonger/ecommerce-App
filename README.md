@@ -2,8 +2,8 @@
 # Homework: Shopping Cart Web App
 
 **Your Name**
- - your_email@gwu.edu
- - your github username
+ - ebrahim5@gwu.edu
+ - ebrahimbonger
  - your EC2 or repl link to live webpage
 
 ## Description
