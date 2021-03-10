@@ -1,8 +1,12 @@
 from flask import Flask, session
+import datetime
 # from flask import render_template, request
 from flask import Flask, render_template, request, redirect, url_for
-
 import mysql.connector
+from mysql.connector import MySQLConnection, Error
+# from python_mysql_dbconfig import read_db_config
+
+
 #import sqlite3
 
 app = Flask('app')
@@ -91,7 +95,9 @@ def products():
 @app.route('/add', methods=['GET', 'POST'])
 def add_product_to_cart():
   session.modified = True
-  c = None  
+  c = None 
+  order_c = None
+  
   _quantity = int(request.form['quantity'])
   _title = request.form['title'] # it gives the name user clicked
   title = request.form['title']
@@ -100,12 +106,19 @@ def add_product_to_cart():
     return
   if _title and _quantity and request.method == 'POST':
 
-
-
-
-
+    # check for the stock avaliability
     c = mydb.cursor(buffered=True, dictionary=True)
-    
+    order_c = mydb.cursor(buffered=True, dictionary=True)
+
+     
+  
+    username = session['username']    
+    order_c.execute('SELECT userId FROM user WHERE username =%s', (username,))
+
+    # tuple
+    userId = order_c.fetchone()
+    # Convert tuple to int
+    userId = userId['userId']
     
     given = _title
     checkQuery = ("SELECT * FROM product WHERE title=%s")
@@ -116,42 +129,83 @@ def add_product_to_cart():
 
         # check if the product already added to the cart and the user has modifiyed the quantity
     if _title in session['cart_item']:
-      
-      modified_item = title
-      old_total_price = session['total_price']
-      old_qty = session['cart_item'][title]['running_qty']
+      # print("The item does exist")
+      # add the old running back to the stock
+      old_running_qty = session['cart_item'][title]['running_qty']
+      old_stock_qty = session['cart_item'][title]['quantity']
+      session['cart_item'][title]['quantity'] = old_running_qty + old_stock_qty
+      #replace it by the new running quantity
+      session['cart_item'][title]['running_qty'] = _quantity
+
       item_price = session['cart_item'][title]['price']
-      substract_from_toatal = old_qty * item_price
-      new_total_price = old_total_price - substract_from_toatal
+      new_total_price = _quantity * item_price
       session['total_price'] = new_total_price
+      stock_quantity = session['cart_item'][title]['quantity'] - _quantity
+      session['cart_item'][title]['quantity'] = stock_quantity
+      print("In the stock")
+      print(stock_quantity)
+      print("added to the cart")
+      print(session['cart_item'][title]['running_qty'])
 
-    session['cart_item'][row['title']] = row
-    print(session)
-    for key, val in session['cart_item'].items():
-      if key == _title:
-        
-        session['cart_item'][key]['running_qty'] = _quantity
+      #upate the database with user changes
+      productId = session['cart_item'][title]['productId']
+      running_qty = session['cart_item'][title]['running_qty']
+      price = session['cart_item'][title]['price']
+      date = datetime.date.today()
+      # order_c.execute('UPDATE orders SET (quantity=%s, date=%s, WHERE userId=%s AND productId=%s)', (running_qty, date, userId, productId,))
+      # update_product(productId, running_qty)
 
-        new_quantity = session['cart_item'][key]['quantity'] - _quantity
-        session['cart_item'][key]['quantity'] = new_quantity
-        # print("running_qty ")
-        # print(_quantity)
-        # print(session['cart_item'][key]['running_qty'])
-        # print(session)
-        # session['cart_item'][key]['quantity'] -= _quantity
-        current_products_price = session['cart_item'][key]['price'] * _quantity
-        old_price = session['total_price'] 
-        current_products_price = old_price + current_products_price
-        session['total_price'] = current_products_price 
-      
-      
 
+    else:
+      # print("The item does not exist")
+      session['cart_item'][row['title']] = row
+      for key, val in session['cart_item'].items():
+        if key == _title:
+          
+          session['cart_item'][key]['running_qty'] = _quantity
+
+          stock_quantity = session['cart_item'][key]['quantity'] - _quantity
+          session['cart_item'][key]['quantity'] = stock_quantity
+          current_products_price = session['cart_item'][key]['price'] * _quantity
+          old_price = session['total_price'] 
+          current_products_price = old_price + current_products_price
+          session['total_price'] = current_products_price 
+          print("In the stock")
+          print(stock_quantity)
+          print("added to the cart")
+          print(session['cart_item'][title]['running_qty'])
+
+          # Inserting to the database
+          productId = session['cart_item'][title]['productId']
+          running_qty = session['cart_item'][title]['running_qty']
+          price = session['cart_item'][title]['price']
+          date = datetime.date.today()
+
+          order_c.execute('INSERT INTO orders  (userId, productId, quantity, price, date) VALUES (%s, %s, %s, %s, %s)', (userId, productId, running_qty, price, date))
+
+
+    # Order table schema
+    # CREATE TABLE `orders` (
+    # `orderId` BIGINT NOT NULL AUTO_INCREMENT,
+    # `userId` BIGINT NULL DEFAULT NULL,
+    # `productId` BIGINT NOT NULL,
+    # `quantity` SMALLINT(6) NOT NULL DEFAULT 0,
+    # `price` FLOAT NOT NULL DEFAULT 0,
+    # `date` DATE,
+    # PRIMARY KEY (`orderId`, `productId`)
+    # );
+
+     
+
+
+    
     
     mydb.commit()
 
 
 
   return redirect(url_for('products'))
+
 
 @app.route('/calculate', methods=['GET', 'POST'])
 def calculate_on_checkout():
@@ -289,6 +343,35 @@ def fetchall(self):
 def commit(self):
     #self.cursor.close()
     self.connection.commit() 
+
+
+def update_product(productId, quantity):
+    # read database configuration
+    db_config = read_db_config()
+
+    # prepare query and data
+    query = """ UPDATE orders
+                SET quantity = %s
+                WHERE productId = %s """
+
+    data = (title, book_id)
+
+    try:
+        conn = MySQLConnection(**db_config)
+
+        # update product quantity
+        cursor = conn.cursor()
+        cursor.execute(query, data)
+
+        # accept the changes
+        conn.commit()
+
+    except Error as error:
+        print(error)
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
 app.run(host='0.0.0.0', port=8080)

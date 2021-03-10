@@ -80,8 +80,8 @@ CREATE TABLE `orders` (
     `orderId` BIGINT NOT NULL AUTO_INCREMENT,
     `userId` BIGINT NULL DEFAULT NULL,
     `productId` BIGINT NOT NULL,
-    `categoryId` BIGINT NOT NULL,
     `quantity` SMALLINT(6) NOT NULL DEFAULT 0,
+    `price` FLOAT NOT NULL DEFAULT 0,
     `date` DATE,
     PRIMARY KEY (`orderId`, `productId`)
 );
