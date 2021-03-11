@@ -1,7 +1,7 @@
 from flask import Flask, session
 import datetime
 # from flask import render_template, request
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector
 from mysql.connector import MySQLConnection, Error
 # from python_mysql_dbconfig import read_db_config
@@ -64,9 +64,13 @@ def login():
 
     return redirect(url_for('products'))
 
-  
+@app.route('/logout')  
+def logout():
+  session.pop('username', None)
+  flash("You have been logged out!")
+  return redirect(url_for('.login'))
 
-@app.route('/products', methods=['GET', 'POST'])
+@app.route('/products/', methods=['GET', 'POST'])
 def products():
 #  try:
   # conn = mysql.connect()
@@ -79,6 +83,7 @@ def products():
   p.close() 
   # print(rows)
   dict = {}
+  product_list = []
   # row[2] represents the category index in the tuple
   for row in rows:
     # row['running_qty'] = 0
@@ -86,10 +91,15 @@ def products():
     # print(row)
     if row[2] in dict:
         dict.get(row[2]).append(row)
+        product_list.append(row[1])
     else:
         dict[row[2]] = [row]
+        product_list.append(row[1])
     
-  # print(dict)
+  
+  # TO DO: store as a dict to keep track of the quantity
+  
+  session['product_list'] = product_list
   return render_template('products.html', dict=dict)
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -101,7 +111,18 @@ def add_product_to_cart():
   _quantity = int(request.form['quantity'])
   _title = request.form['title'] # it gives the name user clicked
   title = request.form['title']
-  print("title "+_title)
+  
+  print("title")
+  if not title in session['product_list']:
+    print("please enter valid entry!")
+    error = "Please, enter a valid entry!"
+    message = "please enter valid entry!"
+    return render_template('alert.html', error=error)
+
+  # print(session['product_list'])
+  # for data in session['product_list']:
+  #   print(data[1])
+    
   if _quantity <= 0 or None:
     return
   if _title and _quantity and request.method == 'POST':
@@ -129,7 +150,8 @@ def add_product_to_cart():
 
         # check if the product already added to the cart and the user has modifiyed the quantity
     if _title in session['cart_item']:
-      # print("The item does exist")
+      print("The item does exist " + _title)
+
       # add the old running back to the stock
       old_running_qty = session['cart_item'][title]['running_qty']
       old_stock_qty = session['cart_item'][title]['quantity']
@@ -142,22 +164,19 @@ def add_product_to_cart():
       session['total_price'] = new_total_price
       stock_quantity = session['cart_item'][title]['quantity'] - _quantity
       session['cart_item'][title]['quantity'] = stock_quantity
-      print("In the stock")
-      print(stock_quantity)
-      print("added to the cart")
-      print(session['cart_item'][title]['running_qty'])
+      
 
       #upate the database with user changes
       productId = session['cart_item'][title]['productId']
       running_qty = session['cart_item'][title]['running_qty']
       price = session['cart_item'][title]['price']
       date = datetime.date.today()
-      # order_c.execute('UPDATE orders SET (quantity=%s, date=%s, WHERE userId=%s AND productId=%s)', (running_qty, date, userId, productId,))
-      # update_product(productId, running_qty)
+      order_c.execute('UPDATE orders SET (quantity=%s, date=%s, WHERE userId=%s AND productId=%s)', (running_qty, date, userId, productId))
+      update_product(productId, running_qty)
 
 
     else:
-      # print("The item does not exist")
+      print("The item does NOT exist " + _title)
       session['cart_item'][row['title']] = row
       for key, val in session['cart_item'].items():
         if key == _title:
@@ -170,10 +189,7 @@ def add_product_to_cart():
           old_price = session['total_price'] 
           current_products_price = old_price + current_products_price
           session['total_price'] = current_products_price 
-          print("In the stock")
-          print(stock_quantity)
-          print("added to the cart")
-          print(session['cart_item'][title]['running_qty'])
+      
 
           # Inserting to the database
           productId = session['cart_item'][title]['productId']
@@ -203,9 +219,15 @@ def add_product_to_cart():
     mydb.commit()
 
 
-
   return redirect(url_for('products'))
 
+@app.route('/test', methods=['GET', 'POST'])
+def test():
+  return "Test Page"
+#/<string:message>
+@app.route('/alert', methods=['GET', 'POST'])
+def alert(message):
+  return render_template('alert.html', message)  
 
 @app.route('/calculate', methods=['GET', 'POST'])
 def calculate_on_checkout():

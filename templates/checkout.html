@@ -1,6 +1,6 @@
-<HTMl>
-    <body>
-        <h1>WELCOME TO CHECKOUT PAGE!</h1>
+{% extends "base.html" %}
+{% block title %}Checkout Page {% endblock %}
+{% block content %}
         
         
         {% if session['cart_item']  %}
@@ -12,11 +12,12 @@
             <input type="submit" value="Remove" class="default-btn" /><br>
         {% endfor%}
        </form> -->
-       <form form method="POST" action="/calculate" id="td_form"></form>
+       
        <table>
            <tr>
                <th>Product</th>
                <th>Unit Price</th>
+               <th>In Stock</th>
                <th>Quantity</th>
                <th>Total Price</th>
            </tr>
@@ -26,7 +27,8 @@
                     
                 <td>{{session['cart_item'][key]['title']}}</td>
                 <td>{{session['cart_item'][key]['price']}}</td>    
-                <td>{{session['cart_item'][key]['running_qty']}}</td> 
+                <td>{{session['cart_item'][key]['quantity']}}</td>
+                <td>{{session['cart_item'][key]['running_qty']}}</td>
                 <td>{{session['cart_item'][key]['price'] * session['cart_item'][key]['running_qty']}}</td>
                 <td class="col-sm-1 col-md-1">
                     <a href="{{ url_for('.delete_product', title=session['cart_item'][key]['title']) }}" class="btn btn-danger">
@@ -45,5 +47,5 @@
 
 
        <br><a href="/products">Continue shopping</a>
-    </body>
-</HTMl>
+
+{% endblock %}

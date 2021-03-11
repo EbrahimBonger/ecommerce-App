@@ -1,8 +1,15 @@
-<html>
-  <head>
+{% extends "base.html" %}
+{% block title %}Log in Page {% endblock %}
     <title>Shopping cart</title>
-  </head>
-  <body>
+  {% block content %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <p>{{msg}}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
     <form action="/login" method="POST">
     <!-- Implement form asking for username and password -->
   <label for="username">Username:</label><br>
@@ -12,5 +19,5 @@
     <input type="submit" value="Submit">
     </form>
     <a href="/register">Register an Account</a>
-  </body>
-</html>
+
+ {% endblock %}
