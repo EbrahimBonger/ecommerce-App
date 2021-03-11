@@ -30,6 +30,41 @@
   </form>
 
 
+
+
+{% if session['cart_item']  %}
+
+<table>
+  <tr>
+      <th>Selected Product</th>
+      <th>Category</th>
+      <th>In Stock</th>
+      <th>Quantity</th>
+      <th>Unit Price</th>
+      
+  </tr>
+  {% for key, val in session['cart_item'].items() %}
+
+  <tr>
+    <tr>
+        
+    <td>{{session['cart_item'][key]['title']}}</td>
+    <td>{{session['cart_item'][key]['categoryname']}}</td>
+    <td>{{session['cart_item'][key]['quantity']}}</td>
+    <td>{{session['cart_item'][key]['running_qty']}}</td>
+    <td>{{session['cart_item'][key]['price']}}</td>
+    <td class="col-sm-1 col-md-1">
+        <a href="{{ url_for('.delete_product_from_product', title=session['cart_item'][key]['title']) }}" class="btn btn-danger">
+            <span class="glyphicon glyphicon-remove"></span> Remove
+        </a></td>
+</tr>
+
+    {% endfor%}
+</table>    
 <a href="/checkout">Go to Cart</a>
+{% else: %}
+<div class="no-records">Your Cart is Empty!</div>
+{% endif %}
+
 
 {% endblock %}

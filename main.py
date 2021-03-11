@@ -171,8 +171,8 @@ def add_product_to_cart():
       running_qty = session['cart_item'][title]['running_qty']
       price = session['cart_item'][title]['price']
       date = datetime.date.today()
-      order_c.execute('UPDATE orders SET (quantity=%s, date=%s, WHERE userId=%s AND productId=%s)', (running_qty, date, userId, productId))
-      update_product(productId, running_qty)
+      order_c.execute('UPDATE orders SET quantity=%s, date=%s WHERE userId=%s AND productId=%s', (running_qty, date, userId, productId))
+      # update_product(productId, running_qty)
 
 
     else:
@@ -271,8 +271,8 @@ def calculate_on_checkout():
 
   return redirect(url_for('checkout'))
 
-@app.route('/delete/<string:title>')
-def delete_product(title):
+@app.route('/delete_product/<string:title>')
+def delete_product_from_product(title):
  try:
   all_total_price = 0
   all_total_quantity = 0
@@ -285,15 +285,36 @@ def delete_product(title):
       removed_price = session['cart_item'][key]['running_qty'] * session['cart_item'][key]['price']
       old_price = session['total_price']
       session['total_price'] = old_price - removed_price
-      # session['cart_item'][key]['running_qty']
       session['cart_item'].pop(key)
       break
+   
+  return redirect(url_for('.products'))
+ except Exception as e:
+  print(e)
 
 
+@app.route('/delete_checkout/<string:title>')
+def delete_product_from_checkout(title):
+ try:
+  all_total_price = 0
+  all_total_quantity = 0
+  session.modified = True
+   
+  for key, val in session['cart_item'].items():
+
+     if title == key:    
+      # adjust the total price
+      removed_price = session['cart_item'][key]['running_qty'] * session['cart_item'][key]['price']
+      old_price = session['total_price']
+      session['total_price'] = old_price - removed_price
+      session['cart_item'].pop(key)
+      break
    
   return redirect(url_for('.checkout'))
  except Exception as e:
   print(e)
+
+
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():

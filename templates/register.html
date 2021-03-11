@@ -1,4 +1,6 @@
-<html>
+{% extends "base.html" %}
+{% block title %} Register Page {% endblock %}
+{% block content %}
   <head>
     <title></title>
   </head>
@@ -16,10 +18,13 @@
       <input type="text" id="user" name="user" required><br>
       <label for="pass">Password:</label>
       <input type="text" id="pass" name="pass" required><br>
-      <input type="submit" value="Submit">
-    </form>
+      <input type="submit" value="Register">
+    </form><br>
+    <label type="texxt" value="">OR</label><br>
     <button>
-      <a type="button" href="/"> Login!</a>
+      <a type="button" href="/"> Login</a>
   </button>
   </body>
 </html>
+
+{% endblock %}
