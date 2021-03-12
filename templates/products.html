@@ -11,8 +11,8 @@
 
 
   <form action="/add" method="POST">
-    <input list="products" name="title" placeholder="Search..e.g shampoo">
-    <datalist id="products">
+    <input list="products" name="title" placeholder="Search..e.g Beard Oil">
+    <datalist id="products" required>
       
 
         {% for key, values in dict.items() %}
@@ -25,7 +25,7 @@
         {% endfor %}
     </datalist>
     
-    <input type="number" class="product-quantity" name="quantity" value="" required/>
+    <input type="number" class="product-quantity" name="quantity" value="1" required/>
     <input type="submit" value="Add to Cart" class="default-btn"/>
   </form>
 

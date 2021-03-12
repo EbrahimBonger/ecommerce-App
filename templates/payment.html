@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Simple Responsive Checkout Form</title>
+	<link rel="stylesheet" href="/static/.css">
+</head>     
+<body>
+
+<div class="wrapper">
+  <div class="container">
+    <div class="title">Checkout Form</div>
+    
+    <div class="input-form">
+      <div class="section-1">
+        <div class="items">
+          <label class="label">card number</label>
+          <input type="text" class="input" data-mask="0000 0000 0000 0000" placeholder="1234 1234 1234 1234">
+        </div>
+      </div>
+      <div class="section-2">
+        <div class="items">
+          <label class="label">card holder</label>
+          <input type="text" class="input" placeholder="Coding Market">
+        </div>
+      </div>
+      <div class="section-3">
+        <div class="items">
+          <label class="label">Expire date</label>
+          <input type="text" class="input" data-mask="00 / 00" placeholder="MM / YY">
+        </div>
+        <div class="items">
+          <div class="cvc">
+            <label class="label">cvc code</label>
+            <div class="tooltip">?
+              <div class="cvc-img"><img src="cvv.png" alt=""></div>
+            </div>
+          </div>
+          <input type="text" class="input" data-mask="0000" placeholder="0000">
+        </div>
+      </div>
+    </div>
+    
+    <div class="btn">proceed</div>
+    
+  </div>
+</div>
+
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.15/jquery.mask.js"></script> -->
+</body>
+</html>

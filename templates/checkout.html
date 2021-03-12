@@ -32,6 +32,11 @@
            {% endfor%}
            <tr>
             <td>Sub Total: {{session['total_price']}}</td>
+            <td>
+                <a href="{{ url_for('.payment', title=session['cart_item']) }}" class="btn btn-danger">
+                    <span class="glyphicon glyphicon-remove"></span> Checkout
+                </a>
+            </td>
            </tr>
        </table>
 

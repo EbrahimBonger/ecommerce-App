@@ -4,8 +4,7 @@ import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector
 from mysql.connector import MySQLConnection, Error
-# from python_mysql_dbconfig import read_db_config
-
+#date format: 2021-03-12 YYYY-MM-DD
 
 #import sqlite3
 
@@ -34,8 +33,11 @@ def login():
     username = request.form.get("username")
     password = request.form.get("password")
     
+    c = None
+    p = None
 
-    c = mydb.cursor(buffered=True)
+    c = mydb.cursor(buffered=True, dictionary=True)
+    p = mydb.cursor(buffered=True, dictionary=True)
     # p = mydb.cursor(buffered=True)
 
     # p.execute("SELECT * FROM product")
@@ -43,10 +45,80 @@ def login():
 
     c.execute('SELECT * FROM user WHERE username=%s AND passwordHash=%s', (username, password))
 
+    
+
+
+  
     users = c.fetchone()
+
     if users is None:
       c.close()
       return render_template('register.html', message='Please Sign Up first to Login!')
+
+    # grap user key if log in to collect order history
+    print("users")
+    print(users)
+    # tuple
+    userId = p.fetchone()
+    # Convert tuple to int
+    userId = users['userId']
+    print("userId")
+    print(userId)
+
+    
+    # get the histry table
+    history = {}
+    product_list = []
+
+    # p.execute('SELECT history.orderId, history.productId, orders.date FROM history INNER JOIN orders ON history.orderId=%s AND history.userId=%s ORDER BY date DESC' , (orderId, userId) )
+    # p.execute('SELECT product.title, history.productId, history.orderId, orders.date FROM product, history INNER JOIN orders ON history.orderId=%s AND history.userId=%s WHERE product.productId=history.productId ORDER BY date DESC' , (orderId, userId) )
+
+    p.execute('SELECT product.title, history.productId, history.orderId, orders.date FROM product, history INNER JOIN orders ON history.orderId=orders.orderId AND orders.userId=%s WHERE product.productId=history.productId  ORDER BY date DESC' , (userId,))
+
+    # SELECT product.title, history.productId, history.orderId, orders.date FROM product, history INNER JOIN orders ON history.orderId=orders.orderId AND history.userId=orders.userId WHERE product.productId=history.productId  ORDER BY date DESC;
+    
+
+    history_list = []
+    history_list = p.fetchall()
+    print("history_list")
+    print(history_list)
+
+    for l in history_list:
+      if l['date'] in history:
+            
+        history[l['date']].append(l)
+      else:
+        history[l['date']] = [l]
+
+    # add the history to the session
+    
+    session['history'] = history
+    # print("History session")
+    # print(session['history'])
+
+    print("History items..")
+    for key, values in session['history'].items():
+      print("date")
+      print(key)
+      print("orderId")
+      print(values[0]['orderId'])
+      for ls in values:
+        # print("ls")
+        print(ls)
+        hist = ls['title']
+        print(hist)
+
+      
+      
+      # for v in values:
+      #   # productId = v['productId']
+      #   # title = getProductTitleById(productId)
+      #   # v['title'] = title
+      #   print(v['title'])
+ 
+    
+    
+
     mydb.commit()
     c.close()
 
@@ -59,10 +131,26 @@ def login():
       
       session['total_price'] = 0
       session['cart_item'] = cart_item = {}
+      
     
     session['username'] = username
 
+    # collect user's previous order story
+    # print("session['history']")
+    # print(session['history'])
+
+
     return redirect(url_for('products'))
+
+def getProductTitleById(productId):
+  c = None
+  c = mydb.cursor(buffered=True)
+  c.execute('SELECT title FROM product WHERE productId =%s', (productId,))
+  title = c.fetchone()
+  title = title[0]
+  mydb.commit()
+  c.close()
+  return title
 
 @app.route('/logout')  
 def logout():
@@ -97,7 +185,6 @@ def products():
         product_list.append(row[1])
     
   
-  # TO DO: store as a dict to keep track of the quantity
   
   session['product_list'] = product_list
   return render_template('products.html', dict=dict)
@@ -197,24 +284,7 @@ def add_product_to_cart():
           price = session['cart_item'][title]['price']
           date = datetime.date.today()
 
-          order_c.execute('INSERT INTO orders  (userId, productId, quantity, price, date) VALUES (%s, %s, %s, %s, %s)', (userId, productId, running_qty, price, date))
-
-
-    # Order table schema
-    # CREATE TABLE `orders` (
-    # `orderId` BIGINT NOT NULL AUTO_INCREMENT,
-    # `userId` BIGINT NULL DEFAULT NULL,
-    # `productId` BIGINT NOT NULL,
-    # `quantity` SMALLINT(6) NOT NULL DEFAULT 0,
-    # `price` FLOAT NOT NULL DEFAULT 0,
-    # `date` DATE,
-    # PRIMARY KEY (`orderId`, `productId`)
-    # );
-
-     
-
-
-    
+          # order_c.execute('INSERT INTO orders  (orderId, userId, date) VALUES (%s, %s, %s)', (0, userId, date))
     
     mydb.commit()
 
@@ -229,47 +299,50 @@ def test():
 def alert(message):
   return render_template('alert.html', message)  
 
-@app.route('/calculate', methods=['GET', 'POST'])
-def calculate_on_checkout():
-  # c  = mydb.cursor()
-  _quantity = int(request.form['quantity'])
-  _title = request.form['title']
-  print("_title and quantity")
-  print(_title)
-  print(_quantity)
-  
-  if _quantity and _title and request.method == 'POST':
-    
-    
-    all_total_price = 0
-    all_total_quantity = 0
 
-    session.modified = True
-    if 'cart_item' in session:
-    #  if the product already exist, add the quantity and price of the existing
-      if row['title'] in session['cart_item']:
-        for key, value in session['cart_item'].items():
-          old_quantity = session['cart_item'][key]['quantity']
-          total_quantity = old_quantity + _quantity
-          session['cart_item'][key]['quantity'] = total_quantity
-          session['cart_item'][key]['total_price'] = total_quantity * row['price']
-    
+
+@app.route('/payment', methods=['GET', 'POST'])
+def payment():
+
+  session.modified = True
+  payment_c = None
+  payment_c = mydb.cursor(buffered=True, dictionary=True)
+  # payment_c.execute('INSERT INTO orders  (orderId, userId, date) VALUES (%s, %s, %s)', (0, userId, date))
+  # Get the product 
+  print("Payment function...")
+  if session['cart_item']:
     for key, value in session['cart_item'].items():
+      print(key)
+      # add a new key to the item_cart and set it to true
+      session['cart_item'][key]['stock'] = True
 
-     individual_quantity = session['cart_item'][key]['quantity']
-     individual_price = session['cart_item'][key]['price']
+      # assign product_id for query operation
+      productId = session['cart_item'][key]['productId']
+      # req_qty = session['cart_item'][key]['running_qty']
+      payment_c.execute('SELECT quantity FROM product WHERE productId =%s', (productId,))
 
-     all_total_quantity = all_total_quantity + individual_quantity
-     all_total_price = all_total_price + individual_price
+      # tuple
+      quantity = payment_c.fetchone()
+      print("test")
+      print(quantity)
+      # Convert tuple to int
+      quantity = quantity['quantity']
+      print(quantity)
+
+      client_qty = session['cart_item'][key]['running_qty']
+      # check the quantity is avaliable in the stock
+      if client_qty > quantity:
+         session['cart_item'][key]['stock'] = False
+         print("Out of stock")
+         print(session['cart_item'][key]['stock'])  
+      else:
+          print("In stock")
+          print(session['cart_item'][key]['stock'])
   else:
-    # session['cart_item'] = itemArray
-    all_total_quantity = all_total_quantity + _quantity
-    all_total_price = all_total_price + _quantity * row['price']
-    
-  session['all_total_quantity'] = all_total_quantity
-  session['all_total_price'] = all_total_price
+    return redirect(url_for('products'))
 
-  return redirect(url_for('checkout'))
+  return render_template('payment.html')
+
 
 @app.route('/delete_product/<string:title>')
 def delete_product_from_product(title):
@@ -318,6 +391,7 @@ def delete_product_from_checkout(title):
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
+  return render_template('checkout.html')
 
   return render_template('checkout.html')
 @app.route('/empty', methods=['GET', 'POST'])
@@ -360,61 +434,10 @@ def register():
   ## Otherwise return register page on get request
   return render_template('register.html')
 
-@app.route('/user',methods=['GET'])
-def user():
-  return render_template('loggedin.html',message="Hello %s" % (session['username']))
-
-def array_merge( first_array , second_array ):
- if isinstance( first_array , list ) and isinstance( second_array , list ):
-  return first_array + second_array
- elif isinstance( first_array , dict ) and isinstance( second_array , dict ):
-  return dict( list( first_array.items() ) + list( second_array.items() ) )
- elif isinstance( first_array , set ) and isinstance( second_array , set ):
-  return first_array.union( second_array )
- return False  
-
-def close(self):
-    self.cursor.close()
-    self.connection.close()
-
-def execute(self, sql):
-    return self.cursor.execute(sql)
-
-def fetchall(self):
-    return self.cursor.fetchall()
-
-def commit(self):
-    #self.cursor.close()
-    self.connection.commit() 
 
 
-def update_product(productId, quantity):
-    # read database configuration
-    db_config = read_db_config()
 
-    # prepare query and data
-    query = """ UPDATE orders
-                SET quantity = %s
-                WHERE productId = %s """
 
-    data = (title, book_id)
-
-    try:
-        conn = MySQLConnection(**db_config)
-
-        # update product quantity
-        cursor = conn.cursor()
-        cursor.execute(query, data)
-
-        # accept the changes
-        conn.commit()
-
-    except Error as error:
-        print(error)
-
-    finally:
-        cursor.close()
-        conn.close()
 
 
 app.run(host='0.0.0.0', port=8080)
