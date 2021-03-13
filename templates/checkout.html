@@ -33,8 +33,8 @@
            <tr>
             <td>Sub Total: {{session['total_price']}}</td>
             <td>
-                <a href="{{ url_for('.payment', title=session['cart_item']) }}" class="btn btn-danger">
-                    <span class="glyphicon glyphicon-remove"></span> Checkout
+                <a href="{{ url_for('.payment', title=session['cart_item']) }}" class="btn btn-success">
+                    <span class="glyphicon glyphicon-success"></span> Proceed
                 </a>
             </td>
            </tr>

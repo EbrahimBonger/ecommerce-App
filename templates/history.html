@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}History Page {% endblock %}
+{% block content %}
+
+
+
+
+<div class="container">
+
+    {% if session['history'] %}
+    {% for key, values session['history'].items() %}
+    {% val in values %}
+        <label for="title">{{val['title']}}</label>
+    {% endfor %}
+    {% endfor %}
+    {% endif %}
+
+</div>
+<a href="/products">Back to Product page</a>
+{% end block %}

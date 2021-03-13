@@ -22,9 +22,59 @@ mydb = mysql.connector.connect(
 def home():
   # Render the homepage 
   #return 'Hello World'
+
+ 
+  # print("History added to session at login page")
+  # print(session['history'])
   return render_template("login.html")
 
+def order_history_to_session(userId):
+    session.modified = True
 
+    history = {}
+    p = None
+    p = mydb.cursor(buffered=True, dictionary=True)
+
+    p.execute('SELECT product.title, history.productId, history.orderId, orders.date FROM product, history INNER JOIN orders ON history.orderId=orders.orderId AND orders.userId=%s WHERE product.productId=history.productId  ORDER BY date ASC' , (userId,))
+
+    
+    rows = p.fetchall()
+
+    # products = p.fetchall()
+    mydb.commit()
+    p.close() 
+    # print(rows)
+    history = {}
+    for row in rows:
+      row['date'] = str(row['date'])
+      if row['date'] in history:
+        history.get(str(row['date'])).append(row)
+      else:
+        history[str(row['date'])] = [row]
+ 
+    session['history'] = history  
+    # print(session['history'])
+    # for key, values in session['history'].items():
+    #   print("key")
+    #   print(key)
+    #   for v in values:
+    #     print(v['orderId'])
+    #     print(v['title'])
+
+
+
+
+    return 0;
+
+
+
+
+# @app.route('/history',methods=['GET', 'POST'])
+# def history():
+#   print("session['history']")
+#   print(session['history'])
+#   dict = session['history']
+#   return render_template('history.html', dict=dict)
 
 #@app.route('/',methods=['GET', 'POST'])
 @app.route('/login',methods=['GET', 'POST'])
@@ -32,18 +82,20 @@ def login():
   if request.method == 'POST':
     username = request.form.get("username")
     password = request.form.get("password")
-    
-    c = None
-    p = None
 
+    c = None
     c = mydb.cursor(buffered=True, dictionary=True)
+
+    p = None
     p = mydb.cursor(buffered=True, dictionary=True)
+    
     # p = mydb.cursor(buffered=True)
 
-    # p.execute("SELECT * FROM product")
-    # products = p.fetchall()
+    p.execute("SELECT * FROM product")
+    products = p.fetchall()
 
     c.execute('SELECT * FROM user WHERE username=%s AND passwordHash=%s', (username, password))
+
 
     
 
@@ -55,58 +107,76 @@ def login():
       c.close()
       return render_template('register.html', message='Please Sign Up first to Login!')
 
-    # grap user key if log in to collect order history
-    print("users")
-    print(users)
-    # tuple
+
+    # the usesr grabs a cart upon first entry
+    session.modified = True
+    # for key in list(session.keys()):
+    #   print("key")
+    #   print(key)
+    #   session.pop(key)
+    # # print(session)
+    if not 'cart_item' in session:
+      
+      session['total_price'] = 0
+      session['cart_item'] = cart_item = {}
+      # session['history'] = history = {}
+      
+    
+    session['username'] = username
+    
     userId = p.fetchone()
-    # Convert tuple to int
     userId = users['userId']
-    print("userId")
-    print(userId)
+
+    print("Before")
+    order_history_to_session(userId)
+    print("After")
 
     
+
+   
+
+    
+  
+
+  
+
+    # p.execute('SELECT product.title, history.productId, history.orderId, orders.date FROM product, history INNER JOIN orders ON history.orderId=orders.orderId AND orders.userId=%s WHERE product.productId=history.productId  ORDER BY date DESC' , (userId,))
+
+
     # get the histry table
-    history = {}
-    product_list = []
-
-    # p.execute('SELECT history.orderId, history.productId, orders.date FROM history INNER JOIN orders ON history.orderId=%s AND history.userId=%s ORDER BY date DESC' , (orderId, userId) )
-    # p.execute('SELECT product.title, history.productId, history.orderId, orders.date FROM product, history INNER JOIN orders ON history.orderId=%s AND history.userId=%s WHERE product.productId=history.productId ORDER BY date DESC' , (orderId, userId) )
-
-    p.execute('SELECT product.title, history.productId, history.orderId, orders.date FROM product, history INNER JOIN orders ON history.orderId=orders.orderId AND orders.userId=%s WHERE product.productId=history.productId  ORDER BY date DESC' , (userId,))
-
-    # SELECT product.title, history.productId, history.orderId, orders.date FROM product, history INNER JOIN orders ON history.orderId=orders.orderId AND history.userId=orders.userId WHERE product.productId=history.productId  ORDER BY date DESC;
+    # session.modified = True
     
+    # product_list = []
 
-    history_list = []
-    history_list = p.fetchall()
-    print("history_list")
-    print(history_list)
+    # history_list = []
+    # history_list = p.fetchall()
+    # # print("history_list")
+    # # print(history_list)
 
-    for l in history_list:
-      if l['date'] in history:
+    # for l in history_list:
+    #   if l['date'] in history:
             
-        history[l['date']].append(l)
-      else:
-        history[l['date']] = [l]
+    #     history[l['date']].append(l)
+    #   else:
+    #     history[l['date']] = [l]
 
-    # add the history to the session
+    # # add the history to the session
+    # session['history'] = history
     
-    session['history'] = history
-    # print("History session")
+    # print("History added to session")
     # print(session['history'])
 
-    print("History items..")
-    for key, values in session['history'].items():
-      print("date")
-      print(key)
-      print("orderId")
-      print(values[0]['orderId'])
-      for ls in values:
-        # print("ls")
-        print(ls)
-        hist = ls['title']
-        print(hist)
+    # print("History items..")
+    # for key, values in session['history'].items():
+    #   print("date")
+    #   print(key)
+    #   print("orderId")
+    #   print(values[0]['orderId'])
+    #   for ls in values:
+    #     # print("ls")
+    #     print(ls)
+    #     hist = ls['title']
+    #     print(hist)
 
       
       
@@ -122,22 +192,23 @@ def login():
     mydb.commit()
     c.close()
 
-    # the usesr grabs a cart upon first entry
-    session.modified = True
-    for key in list(session.keys()):
-     session.pop(key)
-    # print(session)
-    if not 'cart_item' in session:
+    # # the usesr grabs a cart upon first entry
+    # session.modified = True
+    # for key in list(session.keys()):
+    #   print("key")
+    #   print(key)
+    #   session.pop(key)
+    # # print(session)
+    # if not 'cart_item' in session:
       
-      session['total_price'] = 0
-      session['cart_item'] = cart_item = {}
+    #   session['total_price'] = 0
+    #   session['cart_item'] = cart_item = {}
+    #   session['history'] = history
       
     
-    session['username'] = username
+    # session['username'] = username
 
-    # collect user's previous order story
-    # print("session['history']")
-    # print(session['history'])
+   
 
 
     return redirect(url_for('products'))
@@ -199,9 +270,9 @@ def add_product_to_cart():
   _title = request.form['title'] # it gives the name user clicked
   title = request.form['title']
   
-  print("title")
+  # print("title")
   if not title in session['product_list']:
-    print("please enter valid entry!")
+    # print("please enter valid entry!")
     error = "Please, enter a valid entry!"
     message = "please enter valid entry!"
     return render_template('alert.html', error=error)
@@ -309,10 +380,10 @@ def payment():
   payment_c = mydb.cursor(buffered=True, dictionary=True)
   # payment_c.execute('INSERT INTO orders  (orderId, userId, date) VALUES (%s, %s, %s)', (0, userId, date))
   # Get the product 
-  print("Payment function...")
+  # print("Payment function...")
   if session['cart_item']:
     for key, value in session['cart_item'].items():
-      print(key)
+      # print(key)
       # add a new key to the item_cart and set it to true
       session['cart_item'][key]['stock'] = True
 
@@ -323,21 +394,21 @@ def payment():
 
       # tuple
       quantity = payment_c.fetchone()
-      print("test")
-      print(quantity)
+      # print("test")
+      # print(quantity)
       # Convert tuple to int
       quantity = quantity['quantity']
-      print(quantity)
+      # print(quantity)
 
       client_qty = session['cart_item'][key]['running_qty']
       # check the quantity is avaliable in the stock
       if client_qty > quantity:
          session['cart_item'][key]['stock'] = False
-         print("Out of stock")
-         print(session['cart_item'][key]['stock'])  
-      else:
-          print("In stock")
-          print(session['cart_item'][key]['stock'])
+        #  print("Out of stock")
+        #  print(session['cart_item'][key]['stock'])  
+      # else:
+          # print("In stock")
+          # print(session['cart_item'][key]['stock'])
   else:
     return redirect(url_for('products'))
 
@@ -394,14 +465,16 @@ def checkout():
   return render_template('checkout.html')
 
   return render_template('checkout.html')
+
+
 @app.route('/empty', methods=['GET', 'POST'])
 def empty_cart():
  try:
   session.modified = True
-  print(session['cart_item'])
+  # print(session['cart_item'])
   session['cart_item'] = {}
   session['total_price'] = 0
-  print(session['cart_item'])
+  # print(session['cart_item'])
   return redirect(url_for('.checkout'))
  except Exception as e:
   print(e)

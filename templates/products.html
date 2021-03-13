@@ -7,6 +7,8 @@
     <link href="/static/products.css" rel="stylesheet" type="text/css" />
   </head>
 
+  
+
     
 
 
@@ -28,6 +30,7 @@
     <input type="number" class="product-quantity" name="quantity" value="1" required/>
     <input type="submit" value="Add to Cart" class="default-btn"/>
   </form>
+
 
 
 
@@ -59,9 +62,15 @@
         </a></td>
 </tr>
 
-    {% endfor%}
+    {% endfor %}
 </table>    
+
+
+
+
 <a href="/checkout">Go to Cart</a>
+
+
 {% else: %}
 <div class="no-records">Your Cart is Empty!</div>
 {% endif %}
