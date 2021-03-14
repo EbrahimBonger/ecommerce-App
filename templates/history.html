@@ -3,18 +3,52 @@
 {% block content %}
 
 
-
-
 <div class="container">
 
-    {% if session['history'] %}
-    {% for key, values session['history'].items() %}
-    {% val in values %}
-        <label for="title">{{val['title']}}</label>
-    {% endfor %}
-    {% endfor %}
-    {% endif %}
+{% if session['history']  %}
+
+{% for key, values in session['history'].items() %}
+
+<div class="form-group" style="width: 500px; margin: auto">
+    <label for="title">Order ID {{values[0]['orderId']}}, {{key}}</label>
+</div>
+        {% for value in values %} 
+<form action="/add" method="POST" style="width: 500px; margin: auto">
+    
+      
+
+        
+
+    <div class="form-group">
+        <label for="title">{{value['title']}}</label>
+        <input type="hidden" name="title" class="form-control" value="{{value['title']}}"  /> 
+    </div>     
+
+    <div class="form-group"></div>
+        <input type="hidden"  name="flag" value="1" required/>
+        <input type="number" class="product-quantity" name="quantity" value="1" class="form-control" required/>
+        <input type="submit" value="Add to Cart" class="default-btn"/><br>
+    </div>    
+
+  </form>   
+
+  {% endfor %}
+  
+  {% endfor %}
+
+
+
+
+<a href="/checkout">Go to Cart</a><br>
+<a href="/products">Go to products</a>
+
+
+{% else: %}
+<div class="no-records">No history records found</div>
+{% endif %}
 
 </div>
-<a href="/products">Back to Product page</a>
-{% end block %}
+
+
+
+{% endblock %}

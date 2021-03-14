@@ -11,10 +11,11 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="#">Home</a>
 
-            
-            <a href="#" class="btn btn-success">
-                <span class="glyphicon glyphicon-success"></span> Contact
-            </a>
+            {% if session['username'] %} 
+              <a href="/history" class="btn btn-success">
+                  <span class="glyphicon glyphicon-success"></span> Order History
+              </a>
+            {% endif %}
 
 
           </li>
@@ -25,9 +26,8 @@
 
           <li class="nav-item dropdown">
             
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-disabled="true">
-              Dropdown
-            </a>
+            
+            <!-- <a href="/history">Order History</a>
 
             
             <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
@@ -35,33 +35,9 @@
                 <li><a class="dropdown-item" href="#">Another action</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="#">Something else here</a></li>
-              </ul>
+              </ul> -->
 
           </li>
-
-          <li class="nav-date-history dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-disabled="true">
-              <span class="glyphicon glyphicon-history"></span> Order History
-          </a>
-          {% if session['username'] %}
-            
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            {% for key, values in session['history'].items() %}
-              
-                <li class="nav-item-history dropdown"> 
-                  <!-- <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"    aria-expanded="false" aria-disabled="false"> -->
-                  <span class="glyphicon glyphicon-history">
-
-                  </span>{{key}}
-                <!-- </a> -->
-                  
-                </li>
-                <!-- <li><hr class="dropdown-divider"></li> -->
-              
-            {% endfor %}
-            </ul>
-
-          {% endif%}  
 
           </li>
 
@@ -70,10 +46,31 @@
             <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
           </li>
         </ul>
-        <form class="d-flex">
-          <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
+
+        {% if session['username'] %}  
+          
+          <!-- <button class="nav-item">
+            <a class="nav-link" href="{{url_for('.logout')}}">
+              <span class="glyphicon glyphicon-log-out"></span>
+            </a>
+            
+          </button> -->
+
+          <!-- <button type="button" class="btn btn-default btn-sm">
+            <a class="nav-link" href="{{url_for('.logout')}}">
+            <span class="glyphicon glyphicon-log-out"></span> Log out
+          </button> -->
+          <a href="{{url_for('.logout')}}" class="btn btn-info btn-lg">
+            <span class="glyphicon glyphicon-log-out"></span> Log out
+          </a>
+
+          {% else:%}
+
+          <button>
+            <a type="button" href="/"> Login</a>
+          </button>
+      
+        {% endif %}
       </div>
     </div>
   </nav>

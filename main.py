@@ -17,13 +17,14 @@ mydb = mysql.connector.connect(
     password="seas",
     database="cs2541db"
 )
-
 @app.route('/')
 def home():
   # Render the homepage 
   #return 'Hello World'
-
- 
+  session.modified = True
+  session['history'] = {}
+  session.clear()
+  print(session)
   # print("History added to session at login page")
   # print(session['history'])
   return render_template("login.html")
@@ -69,14 +70,12 @@ def order_history_to_session(userId):
 
 
 
-# @app.route('/history',methods=['GET', 'POST'])
-# def history():
-#   print("session['history']")
-#   print(session['history'])
-#   dict = session['history']
-#   return render_template('history.html', dict=dict)
+@app.route('/history',methods=['GET', 'POST'])
+def history():
+  if session:
+    dict = session['history']
+  return render_template('history.html', dict=dict)
 
-#@app.route('/',methods=['GET', 'POST'])
 @app.route('/login',methods=['GET', 'POST'])
 def login():
   if request.method == 'POST':
@@ -98,120 +97,29 @@ def login():
 
 
     
-
-
-  
-    users = c.fetchone()
-
-    if users is None:
+    user = c.fetchone()
+   
+    if user is None:
       c.close()
       return render_template('register.html', message='Please Sign Up first to Login!')
+    else:
+      uname = user['username']
+      upass = user['passwordHash'] 
+
+      if uname == username and upass == password:
+        session.modified = True
+        session['username'] = username
+        session['total_price'] = 0
+        session['cart_item'] = cart_item = {}
+        userId = user['userId']
+        order_history_to_session(userId)
+        mydb.commit()
+        c.close()
+        return redirect(url_for('products'))
 
 
-    # the usesr grabs a cart upon first entry
-    session.modified = True
-    # for key in list(session.keys()):
-    #   print("key")
-    #   print(key)
-    #   session.pop(key)
-    # # print(session)
-    if not 'cart_item' in session:
-      
-      session['total_price'] = 0
-      session['cart_item'] = cart_item = {}
-      # session['history'] = history = {}
-      
-    
-    session['username'] = username
-    
-    userId = p.fetchone()
-    userId = users['userId']
 
-    print("Before")
-    order_history_to_session(userId)
-    print("After")
-
-    
-
-   
-
-    
-  
-
-  
-
-    # p.execute('SELECT product.title, history.productId, history.orderId, orders.date FROM product, history INNER JOIN orders ON history.orderId=orders.orderId AND orders.userId=%s WHERE product.productId=history.productId  ORDER BY date DESC' , (userId,))
-
-
-    # get the histry table
-    # session.modified = True
-    
-    # product_list = []
-
-    # history_list = []
-    # history_list = p.fetchall()
-    # # print("history_list")
-    # # print(history_list)
-
-    # for l in history_list:
-    #   if l['date'] in history:
-            
-    #     history[l['date']].append(l)
-    #   else:
-    #     history[l['date']] = [l]
-
-    # # add the history to the session
-    # session['history'] = history
-    
-    # print("History added to session")
-    # print(session['history'])
-
-    # print("History items..")
-    # for key, values in session['history'].items():
-    #   print("date")
-    #   print(key)
-    #   print("orderId")
-    #   print(values[0]['orderId'])
-    #   for ls in values:
-    #     # print("ls")
-    #     print(ls)
-    #     hist = ls['title']
-    #     print(hist)
-
-      
-      
-      # for v in values:
-      #   # productId = v['productId']
-      #   # title = getProductTitleById(productId)
-      #   # v['title'] = title
-      #   print(v['title'])
- 
-    
-    
-
-    mydb.commit()
-    c.close()
-
-    # # the usesr grabs a cart upon first entry
-    # session.modified = True
-    # for key in list(session.keys()):
-    #   print("key")
-    #   print(key)
-    #   session.pop(key)
-    # # print(session)
-    # if not 'cart_item' in session:
-      
-    #   session['total_price'] = 0
-    #   session['cart_item'] = cart_item = {}
-    #   session['history'] = history
-      
-    
-    # session['username'] = username
-
-   
-
-
-    return redirect(url_for('products'))
+    return render_template('login.html')
 
 def getProductTitleById(productId):
   c = None
@@ -223,11 +131,20 @@ def getProductTitleById(productId):
   c.close()
   return title
 
-@app.route('/logout')  
+# @app.route('/logout')  
+# def logout():
+#   session.pop('username', None)
+#   flash("You have been logged out!")
+#   return redirect(url_for('.login'))
+
+@app.route('/logout')
 def logout():
-  session.pop('username', None)
-  flash("You have been logged out!")
-  return redirect(url_for('.login'))
+  session.pop('token', None)
+  session.clear()
+  message = 'You were logged out' 
+  resp = app.make_response(render_template('login.html', message=message))
+  resp.set_cookie('token', expires=0)
+  return resp   
 
 @app.route('/products/', methods=['GET', 'POST'])
 def products():
@@ -268,7 +185,12 @@ def add_product_to_cart():
   
   _quantity = int(request.form['quantity'])
   _title = request.form['title'] # it gives the name user clicked
+  quantity = int(request.form['quantity'])
   title = request.form['title']
+  flag = int(request.form['flag'])
+  print("pressed")
+  print(title)
+   
   
   # print("title")
   if not title in session['product_list']:
@@ -281,23 +203,28 @@ def add_product_to_cart():
   # for data in session['product_list']:
   #   print(data[1])
     
-  if _quantity <= 0 or None:
-    return
+
+
   if _title and _quantity and request.method == 'POST':
 
-    # check for the stock avaliability
+
+
+
+
+
     c = mydb.cursor(buffered=True, dictionary=True)
-    order_c = mydb.cursor(buffered=True, dictionary=True)
+
+    # order_c = mydb.cursor(buffered=True, dictionary=True)
 
      
   
-    username = session['username']    
-    order_c.execute('SELECT userId FROM user WHERE username =%s', (username,))
+    # username = session['username']    
+    # order_c.execute('SELECT userId FROM user WHERE username =%s', (username,))
 
-    # tuple
-    userId = order_c.fetchone()
-    # Convert tuple to int
-    userId = userId['userId']
+    # # tuple
+    # userId = order_c.fetchone()
+    # # Convert tuple to int
+    # userId = userId['userId']
     
     given = _title
     checkQuery = ("SELECT * FROM product WHERE title=%s")
@@ -329,38 +256,84 @@ def add_product_to_cart():
       running_qty = session['cart_item'][title]['running_qty']
       price = session['cart_item'][title]['price']
       date = datetime.date.today()
-      order_c.execute('UPDATE orders SET quantity=%s, date=%s WHERE userId=%s AND productId=%s', (running_qty, date, userId, productId))
+      # order_c.execute('UPDATE orders SET quantity=%s, date=%s WHERE userId=%s AND productId=%s', (running_qty, date, userId, productId))
       # update_product(productId, running_qty)
 
 
     else:
       print("The item does NOT exist " + _title)
+      
+      
       session['cart_item'][row['title']] = row
+
+
+
+      print(session['cart_item'])
+      # check for the stock avaliability
+
+      productId = session['cart_item'][title]['productId']
+
+      if stock_status(productId, quantity):
+        session['cart_item'][title]['status'] = "In stock"
+      else:
+        session['cart_item'][title]['status'] = "Out of stock"
+      
+
       for key, val in session['cart_item'].items():
         if key == _title:
           
           session['cart_item'][key]['running_qty'] = _quantity
 
-          stock_quantity = session['cart_item'][key]['quantity'] - _quantity
-          session['cart_item'][key]['quantity'] = stock_quantity
-          current_products_price = session['cart_item'][key]['price'] * _quantity
-          old_price = session['total_price'] 
-          current_products_price = old_price + current_products_price
-          session['total_price'] = current_products_price 
+          # stock_quantity = session['cart_item'][key]['quantity'] - _quantity
+          # session['cart_item'][key]['quantity'] = stock_quantity
+
+          # do not sum the current product price if it's out of stock
+          status = session['cart_item'][title]['status']
+          if status is "In stock":
+            current_products_price = session['cart_item'][key]['price'] * _quantity
+            old_price = session['total_price'] 
+            new_products_price = old_price + current_products_price
+            session['total_price'] = new_products_price 
       
 
           # Inserting to the database
-          productId = session['cart_item'][title]['productId']
-          running_qty = session['cart_item'][title]['running_qty']
-          price = session['cart_item'][title]['price']
-          date = datetime.date.today()
+          # productId = session['cart_item'][title]['productId']
+          # running_qty = session['cart_item'][title]['running_qty']
+          # price = session['cart_item'][title]['price']
+          # date = datetime.date.today()
 
           # order_c.execute('INSERT INTO orders  (orderId, userId, date) VALUES (%s, %s, %s)', (0, userId, date))
     
     mydb.commit()
 
+  # this if statement redirect to the page where the order come from
+  if flag is 0:
+    print("product page")
+    return redirect(url_for('products'))
+  elif flag is 1:
+    print("history page")
+    return render_template('history.html') 
 
-  return redirect(url_for('products'))
+  
+def stock_status(productId, requested_qty):
+  
+  c = None
+  c = mydb.cursor(buffered=True, dictionary=True)
+  c.execute('SELECT quantity FROM product WHERE productId =%s', (productId,))
+
+  # tuple
+  quantity = c.fetchone()
+  # Convert tuple to int
+  quantity = quantity['quantity']
+  print("quantity")
+  print(quantity)
+  if quantity >= requested_qty:
+    return True
+  else: False  
+
+  mydb.commit()
+  c.close()
+
 
 @app.route('/test', methods=['GET', 'POST'])
 def test():
@@ -480,9 +453,6 @@ def empty_cart():
   print(e)
 
 
-
-
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 
@@ -490,8 +460,8 @@ def register():
     fname = request.form.get("fname")
     lname = request.form.get("lname")
     email = request.form.get("email")
-    username = request.form.get("user")
-    password = request.form.get("pass")
+    username = request.form.get("username")
+    password = request.form.get("password")
 
 
     c = mydb.cursor()
@@ -502,7 +472,7 @@ def register():
     mydb.commit()
     c.close()
     
-    return render_template('registered.html')
+    return redirect(url_for('home'))
 
   ## Otherwise return register page on get request
   return render_template('register.html')

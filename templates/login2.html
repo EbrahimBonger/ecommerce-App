@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Log in Page {% endblock %}
+    <title>Shopping cart</title>
+  {% block content %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <p>{{msg}}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='/static/main.css') }}">
+    <form action="/login" method="POST" style="width: 500px; margin: auto" >
+    <!-- Implement form asking for username and password -->
+
+  <div class="form-group">
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" class="form-control" required >
+  </div>
+
+  <div class="form-group">
+    <label for="password">Password</label>
+    <input type="text" id="password" name="password" class="form-control" required>
+  </div>  
+
+  
+    <div  class="form-group">
+      <input type="submit" class="form-control" value="Login">
+    </div>
+
+    <div class="row">
+      <button>
+        <a href="/register">Sign Up</a>
+      </button>
+    </div>
+
+    </form>
+    
+    
+    
+   
+
+ {% endblock %}
