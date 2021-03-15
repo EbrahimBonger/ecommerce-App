@@ -6,20 +6,20 @@
         {% if session['cart_item']  %}
         <p><a id="btnEmpty" href="{{ url_for('.empty_cart') }}" class="btn btn-danger">Empty Cart</a></p>
 
-       <table>
-           <tr>
+       <table class="table">
+           <thead class="table-dark">
                <th>Product</th>
                <th>Unit Price</th>
                <th>status</th>
                <th>Quantity</th>
                <th>Total Price</th>
-           </tr>
+           </thead>
            {% for key, val in session['cart_item'].items() %}
-            <tr>
-                <tr>
+            <tbody>
+                
                     
                 <td>{{session['cart_item'][key]['title']}}</td>
-                <td>{{session['cart_item'][key]['price']}}</td>    
+                <td>${{session['cart_item'][key]['price']}}</td>    
                 <td>{{session['cart_item'][key]['status']}}</td>
                 <td>{{session['cart_item'][key]['running_qty']}}</td>
                 <td>{{session['cart_item'][key]['price'] * session['cart_item'][key]['running_qty']}}</td>
@@ -28,16 +28,22 @@
                         <span class="glyphicon glyphicon-remove"></span> Remove
                     </a></td>
                     
-            </tr>    
+            </tbody>    
            {% endfor%}
-           <tr>
-            <td>Sub Total: {{session['total_price']}}</td>
+           <tbody>
+            
+            <td> </td>
+            <td> </td>
+            <td> </td>
+            <td> </td>
+            <td>Sub Total: ${{session['total_price']}}</td>
+
             <td>
                 <a href="{{ url_for('.payment', title=session['cart_item']) }}" class="btn btn-success">
                     <span class="glyphicon glyphicon-success"></span> Checkout
                 </a>
             </td>
-           </tr>
+           </tbody>
        </table>
 
        {% else: %}
@@ -45,6 +51,12 @@
        {% endif %}
 
 
-       <br><a href="/products">Continue shopping</a>
+       
+
+       <div>
+        <a href="/products" class="btn btn-success">
+          <span class="glyphicon glyphicon-success"></span> Continue Shopping...
+      </a>
+      </div>
 
 {% endblock %}
