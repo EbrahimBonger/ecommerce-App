@@ -49,9 +49,9 @@ You have to complete all the requirements for a level before you can move to the
 - [ ] The store doesn't let a user buy negative amounts or more than is in the inventory.
 
 ### Medium level takes you to 95%
-- [ ] A new user can sign up.
-- [ ] A logged in user can see his/her previous order history.
-- [ ] The front end is user friendly: website is easy and intuitive to navigate, no server error messages are presented to to user (if an error occurs, give a user friendly message).
+- [X] A new user can sign up.
+- [X] A logged in user can see his/her previous order history.
+- [X] The front end is user friendly: website is easy and intuitive to navigate, no server error messages are presented to to user (if an error occurs, give a user friendly message).
 - [ ] Website style: products have pictures.
 
 ### Prime level takes you to 100%
