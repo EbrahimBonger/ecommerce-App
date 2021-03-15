@@ -39,36 +39,36 @@ INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
 (1, 1, 1);
 
 INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
+(1, 1, 2);
+
+INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
 (1, 1, 3);
 
 INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
-(1, 1, 5);
+(1, 2, 4);
 
 INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
-(1, 2, 7);
+(1, 2, 5);
 
 INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
-(1, 2, 9);
+(1, 2, 6);
 
 INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
-(1, 2, 11);
+(1, 3, 7);
 
 INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
-(1, 3, 13);
+(1, 3, 8);
 
 INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
-(1, 3, 15);
-
-INSERT INTO `history` ( `userId`, `orderId`, `productId`) VALUES
-(1, 3, 17);
+(1, 3, 9);
 
 -- regidter two sample users
 
 INSERT INTO `user` ( `username`, `first_name`, `last_name`, `email`, `passwordHash`) VALUES
-('user', 'user', 'user', 'user', 'pass' );
+('user', 'user', 'user', 'user@email.com', 'pass' );
 
 INSERT INTO `user` ( `username`, `first_name`, `last_name`, `email`, `passwordHash`) VALUES
-('user2', 'user2', 'user2', 'user2', 'pass2' );
+('user2', 'user2', 'user2', 'user2@email.com', 'pass2' );
 
 
 DROP TABLE IF EXISTS product;
@@ -88,89 +88,89 @@ CREATE TABLE `product` (
 -- Oil & moisturizer category
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Growth Oil','Oil & moisturizer', 14, 10);
+('Growth Oil','Oil & moisturizer', 14, 100);
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Sandalwood Balm','Oil & moisturizer', 9, 10);
+('Sandalwood Balm','Oil & moisturizer', 9, 100);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Beard Cream','Oil & moisturizer', 10, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Beard Cream','Oil & moisturizer', 10, 10);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Growth Vatamin Spray','Oil & moisturizer', 16, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Growth Vatamin Spray','Oil & moisturizer', 16, 10);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Cedar Beard Oil','Oil & moisturizer', 7, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Cedar Beard Oil','Oil & moisturizer', 7, 10);
 
 
 -- Accelerators catedory
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Beard Shampoo','Accelerators', 12, 10);
+('Beard Shampoo','Accelerators', 12, 100);
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Sandalwood Oil','Accelerators', 17, 10);
+('Sandalwood Oil','Accelerators', 17, 100);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Ceadr Beard Oil','Accelerators', 14, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Ceadr Beard Oil','Accelerators', 14, 10);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Riptide Beard Spray','Accelerators', 17, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Riptide Beard Spray','Accelerators', 17, 10);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Riptide Beard Oil','Accelerators', 13, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Riptide Beard Oil','Accelerators', 13, 10);
 
 -- Clean & hold category
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Beard Wash','Clean & hold', 19, 10);
+('Beard Wash','Clean & hold', 19, 100);
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Beard Wax','Clean & hold', 11, 10);
+('Beard Wax','Clean & hold', 11, 100);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Body Wash','Clean & hold', 15, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Body Wash','Clean & hold', 15, 10);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Hair Pomade','Clean & hold', 14, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Hair Pomade','Clean & hold', 14, 10);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Facial Wash','Clean & hold', 18, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Facial Wash','Clean & hold', 18, 10);
 
 -- Grooming
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Beard Trimmer','Grooming', 89, 10);
+('Beard Trimmer','Grooming', 89, 100);
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Beard Brush','Grooming', 5, 10);
+('Beard Brush','Grooming', 5, 100);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Folding Comb','Grooming', 4, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Folding Comb','Grooming', 4, 10);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Beard Scissor','Grooming', 24, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Beard Scissor','Grooming', 24, 10);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Edge Razor','Grooming', 34, 10);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Edge Razor','Grooming', 34, 10);
 
 
 -- Merch category
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Snapback Army Green','Merch', 10, 13);
+('Snapback Army Green','Merch', 10, 100);
 
 INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Snapback Heather Gray','Merch', 10, 13);
+('Snapback Heather Gray','Merch', 10, 100);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Dad Hat','Merch', 10, 13);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Dad Hat','Merch', 10, 13);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Island Hoodie','Merch', 10, 13);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Island Hoodie','Merch', 10, 13);
 
-INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
-('Island T-Shirt','Merch', 10, 13);
+-- INSERT INTO `product` (`title`, `categoryname`, `price`, `quantity`) VALUES
+-- ('Island T-Shirt','Merch', 10, 13);
 
 
 

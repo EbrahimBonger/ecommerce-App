@@ -1,7 +1,10 @@
+
+  
+
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<link rel="stylesheet" href='/static/login1.css'>
+<link rel="stylesheet" href='/static/login.css'>
 <!------ Include the above in your HEAD tag ---------->
 
 <div class="wrapper fadeInDown">
@@ -14,29 +17,216 @@
     </div>
 
     <!-- Sign Up Form -->
-    <form action="/register" method="POST">
+    <form name="form" id="form" action="/register" method="POST">
       
-      <input type="text" id="fname" class="fadeIn second" name="fname" placeholder="first name" required>
+      <div class="form-control">
+        <input type="text" id="fname" class="fadeIn second" name="fname" placeholder="first name">
+        <i class="fas fa-check-circle"></i>
+        <i class="fas fa-exclamation-circle"></i>
+        <small>Error message</small>
+      </div>
 
-      <input type="text" id="lname" class="fadeIn second" name="lname" placeholder="last name" required>
+      <div class="form-control">
+        <input type="text" id="lname" class="fadeIn second" name="lname" placeholder="last name">
+        <i class="fas fa-check-circle"></i>
+        <i class="fas fa-exclamation-circle"></i>
+        <small>Error message</small>
+      </div>  
 
+      <div class="form-control">
+        <input type="text" id="email" name="email" class="fadeIn second" placeholder="email">
+        <i class="fas fa-check-circle"></i>
+        <i class="fas fa-exclamation-circle"></i>
+        <small>Error message</small>
+      </div>  
 
-      <input type="text" id="email" name="email" class="fadeIn second" placeholder="email" required>
+      <div class="form-control">
+        <input type="text" id="username" class="fadeIn second" name="username" placeholder="username">
+        <i class="fas fa-check-circle"></i>
+        <i class="fas fa-exclamation-circle"></i>
+        <small>Error message</small>
+      </div>  
 
-      <input type="text" id="username" class="fadeIn second" name="username" placeholder="username" required>
+      <div class="form-control">
+        <input type="password" id="password" class="fadeIn third" name="password" placeholder="password">
+        <i class="fas fa-check-circle"></i>
+        <i class="fas fa-exclamation-circle"></i>
+        <small>Error message</small>
+      </div>  
 
-      <input type="text" id="password" class="fadeIn third" name="password" placeholder="password" required>
+      <div class="form-control">  
+        <input type="password" id="password2" class="fadeIn third" name="password2" placeholder="confirm">
+        <i class="fas fa-check-circle"></i>
+        <i class="fas fa-exclamation-circle"></i>
+        <small>Error message</small>
+      </div>  
 
       
-
-      <input type="submit" class="fadeIn fourth" value="Register">
+      <!-- <button id="form" class="underlineHover" type="submit" value="submit">Submit</button> -->
+      <input type="submit" class="fadeIn fourth" value="submit">
     </form>
 
     <!-- Log in Passowrd -->
-    <div id="formFooter">
+
+    
+    <!-- <div id="formFooter">
       <a class="underlineHover" href="/">Login</a>
       
-    </div>
+    </div> -->
 
   </div>
 </div>
+
+
+      
+<script>
+
+    
+
+const form = document.getElementById('form');
+const fname = document.getElementById('fname')
+const lname = document.getElementById('lname')
+const email = document.getElementById('email');
+const username = document.getElementById('username');
+const password = document.getElementById('password');
+const password2 = document.getElementById('password2');
+
+form.addEventListener('submit', e => {
+  
+  // var isValid = new Boolean(false);
+  
+  if(!checkInputs()){
+    e.preventDefault()
+  }
+  
+});
+
+
+
+function checkInputs() {
+  // trim to remove the whitespaces
+
+  const fnameValue = fname.value.trim();
+  const lnameValue = lname.value.trim();
+  const usernameValue = username.value.trim();
+  const emailValue = email.value.trim();
+  const passwordValue = password.value.trim();
+  const password2Value = password2.value.trim();
+
+  
+
+
+  
+  if(usernameValue === '') {
+    setErrorFor(username, 'Username cannot be blank');
+    alert("All entry must be fulled out")
+    return false;
+  } else {
+    setSuccessFor(username);
+  }
+
+  if(fnameValue === '') {
+    setErrorFor(fname, 'First name cannot be blank');
+    alert("All entry must be fulled out")
+    return false;
+  } else {
+    setSuccessFor(fname);
+  }
+
+  if(lnameValue === '') {
+    setErrorFor(lname, 'Last name cannot be blank');
+    alert("All entry must be fulled out")
+    return false;
+  } else {
+    setSuccessFor(lname);
+  }
+  
+  if(emailValue === '') {
+    setErrorFor(email, 'Email cannot be blank');
+    alert("All entry must be fulled out")
+    return false;
+  } else if (!isEmail(emailValue)) {
+    setErrorFor(email, 'Not a valid email');
+    alert("Please, Enter valid email")
+    return false;
+  } else {
+    setSuccessFor(email);
+  }
+  
+  if(passwordValue === '') {
+    setErrorFor(password, 'Password cannot be blank');
+    alert("All entry must be fulled out")
+    return false;
+  } else {
+    setSuccessFor(password);
+  }
+  
+  if(password2Value === '') {
+    setErrorFor(password2, 'Password cannot be blank');
+    alert("All entry must be fulled out")
+    return false;
+  } else if(passwordValue !== password2Value) {
+    setErrorFor(password2, 'Passwords did not match');
+    alert("Passwords does not match")
+    return false;
+  } else{
+    setSuccessFor(password2);
+  }
+
+  
+  return true;
+
+}
+
+
+
+function setErrorFor(input, message) {
+  const formControl = input.parentElement;
+  const small = formControl.querySelector('small');
+  formControl.className = 'form-control error';
+  small.innerText = message;
+}
+
+function setSuccessFor(input) {
+  const formControl = input.parentElement;
+  formControl.className = 'form-control success';
+}
+
+document.onclick = function(e) {
+    if (e.target instanceof HTMLAnchorElement) e.preventDefault();
+}
+  
+function isEmail(email) {
+  return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // SOCIAL PANEL JS
+// const floating_btn = document.querySelector('.floating-btn');
+// const close_btn = document.querySelector('.close-btn');
+// const social_panel_container = document.querySelector('.social-panel-container');
+
+// floating_btn.addEventListener('click', () => {
+//   social_panel_container.classList.toggle('visible')
+// });
+
+// close_btn.addEventListener('click', () => {
+//   social_panel_container.classList.remove('visible')
+// });
+
+
+
+
+
+  </script>

@@ -38,11 +38,15 @@
             <td> </td>
             <td>Sub Total: ${{session['total_price']}}</td>
 
+        {% if not session['total_price'] == 0%} 
+
             <td>
                 <a href="{{ url_for('.payment', title=session['cart_item']) }}" class="btn btn-success">
                     <span class="glyphicon glyphicon-success"></span> Checkout
                 </a>
             </td>
+
+            {% endif %}
            </tbody>
        </table>
 

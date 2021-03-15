@@ -1,5 +1,7 @@
 from flask import Flask, session
-import datetime
+from collections import OrderedDict
+from datetime import datetime
+from decimal import Decimal
 # from flask import render_template, request
 from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector
@@ -12,7 +14,8 @@ app = Flask('app')
 app.secret_key = b'mysecretkey'
 
 mydb = mysql.connector.connect(
-    host="ec2-100-26-20-223.compute-1.amazonaws.com",
+    # host="ec2-100-26-20-223.compute-1.amazonaws.com",
+    host="ec2-100-25-169-158.compute-1.amazonaws.com",
     user="ebrahim5",
     password="seas",
     database="cs2541db"
@@ -24,9 +27,6 @@ def home():
   session.modified = True
   session['history'] = {}
   session.clear()
-  print(session)
-  # print("History added to session at login page")
-  # print(session['history'])
   return render_template("login.html")
 
 def order_history_to_session(userId):
@@ -44,7 +44,6 @@ def order_history_to_session(userId):
     # products = p.fetchall()
     mydb.commit()
     p.close() 
-    # print(rows)
     history = {}
     for row in rows:
       row['date'] = str(row['date'])
@@ -54,16 +53,7 @@ def order_history_to_session(userId):
         history[str(row['date'])] = [row]
  
     session['history'] = history  
-    # print(session['history'])
-    # for key, values in session['history'].items():
-    #   print("key")
-    #   print(key)
-    #   for v in values:
-    #     print(v['orderId'])
-    #     print(v['title'])
-
-
-
+ 
 
     return 0;
 
@@ -73,8 +63,14 @@ def order_history_to_session(userId):
 @app.route('/history',methods=['GET', 'POST'])
 def history():
   if session:
-    dict = session['history']
-  return render_template('history.html', dict=dict)
+    # ordered_data = sorted(dict.items(), key = lambda x:datetime.strptime(x[0], '%y-%m-%d'), reverse=True)
+    # ordered = OrderedDict(sorted(dict.items(), key=lambda t: t[0]))
+    # new_d = OrderedDict(sorted(dict.items()))
+    userId = session['userId']
+    dict = order_history_to_session(userId)  
+ 
+    
+    return render_template('history.html', dict=dict)
 
 @app.route('/login',methods=['GET', 'POST'])
 def login():
@@ -101,7 +97,7 @@ def login():
    
     if user is None:
       c.close()
-      return render_template('register.html', message='Please Sign Up first to Login!')
+      return render_template('register.html', message='Please, Create account')
     else:
       uname = user['username']
       upass = user['passwordHash'] 
@@ -112,7 +108,8 @@ def login():
         session['total_price'] = 0
         session['cart_item'] = cart_item = {}
         userId = user['userId']
-        order_history_to_session(userId)
+        session['userId'] = userId
+      
         mydb.commit()
         c.close()
         return redirect(url_for('products'))
@@ -131,11 +128,20 @@ def getProductTitleById(productId):
   c.close()
   return title
 
-# @app.route('/logout')  
-# def logout():
-#   session.pop('username', None)
-#   flash("You have been logged out!")
-#   return redirect(url_for('.login'))
+def getProductQuantity(productId):
+  c = None
+  c = mydb.cursor(buffered=True)
+  c.execute('SELECT quantity FROM product WHERE productId =%s', (productId,))
+  quantity = c.fetchone()
+ 
+  quantity = quantity[0]
+  mydb.commit()
+  c.close()
+  return quantity
+
+
+
+
 
 @app.route('/logout')
 def logout():
@@ -157,14 +163,11 @@ def products():
   # products = p.fetchall()
   mydb.commit()
   p.close() 
-  # print(rows)
   dict = {}
   product_list = []
   # row[2] represents the category index in the tuple
   for row in rows:
-    # row['running_qty'] = 0
-    # print("running_qty")
-    # print(row)
+
     if row[2] in dict:
         dict.get(row[2]).append(row)
         product_list.append(row[1])
@@ -188,21 +191,15 @@ def add_product_to_cart():
   quantity = int(request.form['quantity'])
   title = request.form['title']
   flag = int(request.form['flag'])
-  print("pressed")
-  print(title)
+
    
   
-  # print("title")
   if not title in session['product_list']:
-    # print("please enter valid entry!")
-    error = "Please, enter a valid entry!"
+    error = "Please, enter a valid input..."
     message = "please enter valid entry!"
     return render_template('alert.html', error=error)
 
-  # print(session['product_list'])
-  # for data in session['product_list']:
-  #   print(data[1])
-    
+
 
 
   if _title and _quantity and request.method == 'POST':
@@ -210,21 +207,9 @@ def add_product_to_cart():
 
 
 
-
-
     c = mydb.cursor(buffered=True, dictionary=True)
 
-    # order_c = mydb.cursor(buffered=True, dictionary=True)
-
-     
-  
-    # username = session['username']    
-    # order_c.execute('SELECT userId FROM user WHERE username =%s', (username,))
-
-    # # tuple
-    # userId = order_c.fetchone()
-    # # Convert tuple to int
-    # userId = userId['userId']
+ 
     
     given = _title
     checkQuery = ("SELECT * FROM product WHERE title=%s")
@@ -233,67 +218,59 @@ def add_product_to_cart():
 
     row = c.fetchone()
 
-        # check if the product already added to the cart and the user has modifiyed the quantity
+    stock_quantity = row['quantity']
+
+   
+
+
+    
+
+
+    # check if the product already added to the cart and the user has modifiyed the quantity
     if _title in session['cart_item']:
       print("The item does exist " + _title)
 
-      # add the old running back to the stock
-      old_running_qty = session['cart_item'][title]['running_qty']
-      old_stock_qty = session['cart_item'][title]['quantity']
-      session['cart_item'][title]['quantity'] = old_running_qty + old_stock_qty
-      #replace it by the new running quantity
+      # update the quantity
       session['cart_item'][title]['running_qty'] = _quantity
 
-      item_price = session['cart_item'][title]['price']
-      new_total_price = _quantity * item_price
-      session['total_price'] = new_total_price
-      stock_quantity = session['cart_item'][title]['quantity'] - _quantity
-      session['cart_item'][title]['quantity'] = stock_quantity
-      
-
-      #upate the database with user changes
-      productId = session['cart_item'][title]['productId']
-      running_qty = session['cart_item'][title]['running_qty']
-      price = session['cart_item'][title]['price']
-      date = datetime.date.today()
-      # order_c.execute('UPDATE orders SET quantity=%s, date=%s WHERE userId=%s AND productId=%s', (running_qty, date, userId, productId))
-      # update_product(productId, running_qty)
 
 
-    else:
-      print("The item does NOT exist " + _title)
-      
-      
-      session['cart_item'][row['title']] = row
+    #  title = session['cart_item'][title]['title']
 
-
-
-      print(session['cart_item'])
-      # check for the stock avaliability
-
-      productId = session['cart_item'][title]['productId']
-
-      if stock_status(productId, quantity):
+      if stock_status(stock_quantity, quantity):
         session['cart_item'][title]['status'] = "In stock"
+        current_products_price = session['cart_item'][title]['price'] * _quantity
+        old_price = session['total_price'] 
+        new_products_price = old_price + current_products_price
+        session['total_price'] = new_products_price 
+
       else:
         session['cart_item'][title]['status'] = "Out of stock"
       
 
-      for key, val in session['cart_item'].items():
-        if key == _title:
-          
-          session['cart_item'][key]['running_qty'] = _quantity
+    else:
+      print("The item does NOT exist " + _title)
+      
+      # add the product to the cart
 
-          # stock_quantity = session['cart_item'][key]['quantity'] - _quantity
-          # session['cart_item'][key]['quantity'] = stock_quantity
+      session['cart_item'][row['title']] = row
+      session['cart_item'][title]['des'] = str(descreption(title))
+      session['cart_item'][title]['img'] = str(imagepath(title))
+    
+      session['cart_item'][title]['running_qty'] = _quantity
 
-          # do not sum the current product price if it's out of stock
-          status = session['cart_item'][title]['status']
-          if status is "In stock":
-            current_products_price = session['cart_item'][key]['price'] * _quantity
-            old_price = session['total_price'] 
-            new_products_price = old_price + current_products_price
-            session['total_price'] = new_products_price 
+      if stock_status(stock_quantity, quantity):
+        
+        session['cart_item'][title]['status'] = "In stock"
+        current_products_price = session['cart_item'][title]['price'] * _quantity
+        old_price = session['total_price'] 
+        new_products_price = old_price + current_products_price
+        session['total_price'] = new_products_price
+
+      else:
+        session['cart_item'][title]['status'] = "Out of stock"
+      
+
       
 
           # Inserting to the database
@@ -308,31 +285,18 @@ def add_product_to_cart():
 
   # this if statement redirect to the page where the order come from
   if flag is 0:
-    print("product page")
     return redirect(url_for('products'))
   elif flag is 1:
-    print("history page")
     return render_template('history.html') 
 
   
-def stock_status(productId, requested_qty):
+def stock_status(stock_quantity, quantity):
   
-  c = None
-  c = mydb.cursor(buffered=True, dictionary=True)
-  c.execute('SELECT quantity FROM product WHERE productId =%s', (productId,))
 
-  # tuple
-  quantity = c.fetchone()
-  # Convert tuple to int
-  quantity = quantity['quantity']
-  print("quantity")
-  print(quantity)
-  if quantity >= requested_qty:
+  if stock_quantity >= quantity:
     return True
   else: False  
 
-  mydb.commit()
-  c.close()
 
 
 @app.route('/test', methods=['GET', 'POST'])
@@ -351,39 +315,48 @@ def payment():
   session.modified = True
   payment_c = None
   payment_c = mydb.cursor(buffered=True, dictionary=True)
-  # payment_c.execute('INSERT INTO orders  (orderId, userId, date) VALUES (%s, %s, %s)', (0, userId, date))
-  # Get the product 
-  # print("Payment function...")
-  if session['cart_item']:
-    for key, value in session['cart_item'].items():
-      # print(key)
-      # add a new key to the item_cart and set it to true
-      session['cart_item'][key]['stock'] = True
 
-      # assign product_id for query operation
-      productId = session['cart_item'][key]['productId']
-      # req_qty = session['cart_item'][key]['running_qty']
-      payment_c.execute('SELECT quantity FROM product WHERE productId =%s', (productId,))
+  final_products = {}
+  final_total_price = 0
 
-      # tuple
-      quantity = payment_c.fetchone()
-      # print("test")
-      # print(quantity)
-      # Convert tuple to int
-      quantity = quantity['quantity']
-      # print(quantity)
 
-      client_qty = session['cart_item'][key]['running_qty']
-      # check the quantity is avaliable in the stock
-      if client_qty > quantity:
-         session['cart_item'][key]['stock'] = False
-        #  print("Out of stock")
-        #  print(session['cart_item'][key]['stock'])  
-      # else:
-          # print("In stock")
-          # print(session['cart_item'][key]['stock'])
-  else:
-    return redirect(url_for('products'))
+
+
+  for key in list(session['cart_item']):
+    
+    status = session['cart_item'][key]['status']
+
+
+    
+    running_qty = session['cart_item'][key]['running_qty']
+    price = session['cart_item'][key]['price'] * running_qty
+   
+    if not status == "In stock":
+
+      session['cart_item'].pop(key)
+ 
+    else:  
+      print("Found")
+
+
+ 
+
+  vat = (session['total_price'] /100)*19
+
+  total_price_vat_included = session['total_price'] + vat
+
+  total_price_vat_included = Decimal(total_price_vat_included)
+
+  total_price_vat_included = round(total_price_vat_included, 2)
+  
+  session['total_price'] = total_price_vat_included
+
+  vat = Decimal(vat)
+
+  vat = round(vat, 2)
+   
+  session['vat'] = vat
+
 
   return render_template('payment.html')
 
@@ -431,23 +404,105 @@ def delete_product_from_checkout(title):
  except Exception as e:
   print(e)
 
+@app.route('/success', methods=['GET', 'POST'])
+def success():
+
+  print("success head")
+ 
+
+  # card_number and card_holder and expires and cvv and 
+
+  if request.method == 'POST':
+    
+    card_number = request.form.get("card_number")
+    card_holder = request.form.get("card_holder")
+    expires = request.form.get("expires")
+    cvv = request.form.get("cvv")
+
+    session.modified = True
+    insert_c = None
+    update_c  = None
+    select_c = None
+
+    print("success body")
+    insert_c = mydb.cursor(buffered=True, dictionary=True)
+    update_c = mydb.cursor(buffered=True, dictionary=True)
+    select_c = mydb.cursor(buffered=True, dictionary=True)
+
+    date = datetime.now()
+    userId = session['userId']
+
+    #  INSERT INTO `orders` ( `orderId`, `userId`, `date`) VALUES
+    # (1, 1, '2020-05-09' );
+
+    # insert user order
+    insert_c.execute('INSERT INTO orders  (userId, date) VALUES (%s, %s)', (userId, date))
+    
+
+    # then get the orderId from orders table
+    # select_c.execute('SELECT orderId FROM orders WHERE userId=%s', (userId,))
+    select_c.execute('SELECT orderId FROM orders ORDER BY orderId DESC LIMIT 1')
+    orderId = select_c.fetchone()
+    print(orderId)
+    orderId = orderId['orderId']
+    
+
+    # insert the the product purchased into history table and update on product table
+
+    for key, val in session['cart_item'].items():
+      # set variables that needs to be updated
+      productId = session['cart_item'][key]['productId']
+      running_qty = session['cart_item'][key]['running_qty']
+      quantity = getProductQuantity(productId)
+      new_quantity = quantity - running_qty
+
+      update_c.execute('UPDATE product SET quantity=%s WHERE productId=%s', (new_quantity, productId))
+
+      insert_c.execute('INSERT INTO history  (userId, orderId, productId) VALUES (%s, %s, %s)', (userId, orderId, productId))
+
+    insert_c.close
+    update_c.close  
+    select_c.close
+
+    mydb.commit()
+
+    session['cart_item'] = {}
+    session['total_price'] = 0
+
+    return render_template('success.html')
+
+  else:
+    return "Something went wrong. Please, try agin..."
+
+
+        
+
+
+
+
+
+
+
+
+
+
+  
+
 
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
   return render_template('checkout.html')
 
-  return render_template('checkout.html')
+ 
 
 
 @app.route('/empty', methods=['GET', 'POST'])
 def empty_cart():
  try:
   session.modified = True
-  # print(session['cart_item'])
   session['cart_item'] = {}
   session['total_price'] = 0
-  # print(session['cart_item'])
   return redirect(url_for('.checkout'))
  except Exception as e:
   print(e)
@@ -462,6 +517,7 @@ def register():
     email = request.form.get("email")
     username = request.form.get("username")
     password = request.form.get("password")
+    password2 = request.form.get("password2")
 
 
     c = mydb.cursor()
@@ -475,7 +531,74 @@ def register():
     return redirect(url_for('home'))
 
   ## Otherwise return register page on get request
+  print("register page")
   return render_template('register.html')
+
+
+def descreption(title):
+  
+  product_des = { 'Growth Oil' : 'Beards, like plants, need a strong base to grow from and plenty of hydration to reach their full potential.',
+
+  
+  'Sandalwood Balm' :'Inspired by the traditional ceremony of Galungan, our Coconut + Sandalwood Body Balm is an aromatic celebration of Bali.',
+
+  'Beard Shampoo' : 'Our Beard Supplements are composed of essential nutrients that support the growth of healthy hair, skin, nails and connective tissues.',
+
+  'Sandalwood Oil' : 'Grow The Perfect Beard With This Combo Designed To Maximize Results.',
+
+  'Beard Wash' : 'Our Beard Supplements are composed of essential nutrients that support the growth of healthy hair, skin, nails and connective tissues.',
+
+  'Beard Wax' : 'This professional-grade moustache wax was designed to help keep your moustache healthy and looking great.',
+
+  'Beard Trimmer' : 'This kit includes the PT45 Trimmer with LED display stand & 8 trimmer guides',
+
+  'Beard Brush' : 'Grow The Perfect Beard With This Combo Designed To Maximize Results.',
+
+  'Snapback Army Green': 'CREATED FOR BEARDED INDIVIDUALS, THIS HAT IS SURE TO COMPLIMENT THOSE PROUD TO LIVE THE NO SHAVE LIFE.',
+
+  'Snapback Heather Gray' : 'BEARDED INDIVIDUALS, THIS HAT IS SURE TO COMPLIMENT THOSE PROUD TO LIVE THE NO SHAVE LIFE.' 
+  }
+
+  return product_des.get(title)
+
+
+def imagepath(title):
+  image_path = { 'Growth Oil' : 'image/Growth_ Oil.jpg',
+
+  
+  'Sandalwood Balm' : 'image/Sandalwood_Balm.jpg',
+
+  'Beard Shampoo' : 'image/Beard_Shampoo.jpg',
+
+  'Sandalwood Oil' : 'image/Sandalwood_Oil.jpg',
+
+  'Beard Wash' : 'image/Beard_Wash.jpg',
+
+  'Beard Wax' : 'image/Beard_Wax.jpg',
+
+  'Beard Trimmer' : 'image/Beard_Trimmer.jpg',
+
+  'Beard Brush' : 'image/Beard_Brush.jpg',
+
+  'Snapback Army Green': 'image/Snapback_Army_Green.jpg',
+
+  'Snapback Heather Gray' : 'image/Snapback_Heather_Gray.jpg' 
+  }
+
+  return image_path.get(title)
+
+  
+  
+  
+
+
+  
+  
+
+
+
+
+
 
 
 

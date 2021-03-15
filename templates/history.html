@@ -5,17 +5,19 @@
 
 <div class="container">
 
+    <div>
+        <a href="/products" class="btn btn-info btn-lg">
+            <span class="glyphicon glyphicon-arrow-left"></span> Return
+        </a>
+    </div> 
+
 {% if session['history']  %}
 
 
 <div class="row">
  
 
-    <div>
-        <a href="/products" class="btn btn-info btn-lg">
-            <span class="glyphicon glyphicon-arrow-left"></span> Return
-        </a>
-    </div>    
+      
 
 
     <div class="mx-auto" style="width: 300px";>
@@ -49,7 +51,7 @@
 
                 <input type="hidden" name="title" class="form-control" value="{{value['title']}}">
                 
-                <input id="input" type="number" class="product-quantity" size="2" name="quantity" value="1" class="form-control" required>
+                <input id="input" min="1" type="number" class="product-quantity" size="2" name="quantity" value="1" class="form-control" required>
 
                 <input id="input" type="submit" value="Add" class="fa fa-shopping-cart">
 

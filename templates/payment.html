@@ -6,17 +6,19 @@
         <h2>Order Summary</h2>
                 <div class='line'></div>
 
+
+
+
         {% for key, values in session['cart_item'].items() %}
 
         <table class='order-table'>
           <tbody>
             <tr>
-              <td>
-                
+              <td><img src="{{url_for('static',filename = session['cart_item'][key]['img'])}}" class='full-width'></img>
               </td>
               <td>
-                <br> <span class='thin'>Nike</span>
-                <br> <h4>{{session['cart_item'][key]['title']}}</h4> <br> <span class='thin small'><br><br></span>
+                <br> <span class='thin'></span>
+                <br> <br> <span class='thin small'> {{session['cart_item'][key]['title']}}<br><br></span>
               </td>
 
             </tr>
@@ -25,74 +27,38 @@
                 <div class='price'>${{session['cart_item'][key]['price']}}</div>
               </td>
             </tr>
-          </tbody> 
-          
+          </tbody>
+
         </table>
 
         {% endfor %}
 
-<!-- 
-        <div class='line'></div>
 
-        <table class='order-table'>
-          <tbody>
-            <tr>
-              <td><img src='https://dl.dropboxusercontent.com/s/qbj9tsbvthqq72c/Vintage-20L-Backpack-by-Fj%C3%A4llr%C3%A4ven.jpg' class='full-width'></img>
-              </td>
-              <td>
-                <br> <span class='thin'>Fjällräven</span>
-                <br>Vintage Backpack<br> <span class='thin small'> Color: Olive, Size: 20L</span>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div class='price'>$235.95</div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+
+
+
+
+
+        
+
 
 
         <div class='line'></div>
-
-
-        <table class='order-table'>
-          <tbody>
-            <tr>
-              <td><img src='https://dl.dropboxusercontent.com/s/nbr4koso8dpoggs/6136C1p5FjL._SL1500_.jpg' class='full-width'></img>
-              </td>
-              <td>
-                <br> <span class='thin'>Monobento</span>
-                <br>Double Lunchbox<br> <span class='thin small'> Color: Pink, Size: Medium</span>
-              </td>
-
-            </tr>
-            <tr>
-              <td>
-                <div class='price'>$25.95</div>
-              </td>
-            </tr>
-          </tbody>
-        </table> -->
-
-        <div class='line'></div>
-
         <div class='total'>
           <span style='float:left;'>
             <div class='thin dense'>VAT 19%</div>
-            <!-- <div class='thin dense'>Delivery</div> -->
+            <div class='thin dense'></div>
             TOTAL
           </span>
-
-
-
-         
           <span style='float:right; text-align:right;'>
             <div class='thin dense'>${{session['vat']}}</div>
-            <!-- <div class='thin dense'>$4.95</div> -->
+            <div class='thin dense'></div>
             ${{session['total_price']}}
           </span>
         </div>
+
+
+
 </div>
 </div>
         <div class='credit-info'>
@@ -109,20 +75,25 @@
             </table>
             <img src='https://dl.dropboxusercontent.com/s/ubamyu6mzov5c80/visa_logo%20%281%29.png' height='80' class='credit-card-image' id='credit-card-image'></img>
             Card Number
-            <input class='input-field'></input>
+
+          <form action="/success" method="POST">
+
+            <input type="number" name="card_number" id="card_number" class='input-field' required></input>
             Card Holder
-            <input class='input-field'></input>
+            <input type="text" name="card_holder" id="card_holder" class='input-field' required></input>
             <table class='half-input-table'>
               <tr>
                 <td> Expires
-                  <input class='input-field'></input>
+                  <input type="number" id="expires" name="exprires" class='input-field' value="" required></input>
                 </td>
                 <td>CVC
-                  <input class='input-field'></input>
+                  <input min="3" max="3" name="cvv" id="cvv" class='input-field' required></input>
                 </td>
               </tr>
             </table>
-            <button class='pay-btn'>Checkout</button>
+            <!-- <button type="submit" class='pay-btn'>Pay</button> -->
+            <input type="submit"  class="glyphicon glyphicon-success" value="Pay">
+          </form>  
 
           </div>
 
