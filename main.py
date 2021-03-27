@@ -15,7 +15,7 @@ app.secret_key = b'mysecretkey'
 
 mydb = mysql.connector.connect(
     # host="ec2-100-26-20-223.compute-1.amazonaws.com",
-    host="ec2-100-25-169-158.compute-1.amazonaws.com",
+    host="ec2-52-86-184-238.compute-1.amazonaws.com",
     user="ebrahim5",
     password="seas",
     database="cs2541db"
