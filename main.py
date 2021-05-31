@@ -1,6 +1,7 @@
 from flask import Flask, session
 from collections import OrderedDict
 from datetime import datetime
+import json
 from decimal import Decimal
 # from flask import render_template, request
 from flask import Flask, render_template, request, redirect, url_for, flash
@@ -14,10 +15,10 @@ app = Flask('app')
 app.secret_key = b'mysecretkey'
 
 mydb = mysql.connector.connect(
-    host="ec2-52-86-184-238.compute-1.amazonaws.com",
+    host="localhost",
     user="ebrahim5",
     password="seas",
-    database="cs2541db"
+    database="stock"
 )
 @app.route('/')
 def home():
@@ -311,6 +312,7 @@ def alert(message):
 @app.route('/payment', methods=['GET', 'POST'])
 def payment():
 
+  print("I'm hereeeeeeeeeeee")
   session.modified = True
   payment_c = None
   payment_c = mydb.cursor(buffered=True, dictionary=True)
@@ -338,23 +340,30 @@ def payment():
       print("Found")
 
 
- 
+    vat = (session['total_price'] /100)*19
+    print("vat")
 
-  vat = (session['total_price'] /100)*19
+    total_price_vat_included = session['total_price'] + vat
+    print("total_price_vat_included")
 
-  total_price_vat_included = session['total_price'] + vat
+    total_price_vat_included = Decimal(total_price_vat_included)
+    print("total_price_vat_included 2")
 
-  total_price_vat_included = Decimal(total_price_vat_included)
+    total_price_vat_included = round(total_price_vat_included, 2)
+    print("total_price_vat_included 3")
+    
+    session['total_price'] = str(total_price_vat_included)
+    print("vat")
 
-  total_price_vat_included = round(total_price_vat_included, 2)
-  
-  session['total_price'] = total_price_vat_included
+    vat = Decimal(vat)
+    print("vat to Dec")
 
-  vat = Decimal(vat)
+    vat = round(vat, 2)
+    print("vat round")
+    
+    session['vat'] = str(vat)
 
-  vat = round(vat, 2)
-   
-  session['vat'] = vat
+
 
 
   return render_template('payment.html')
@@ -472,22 +481,7 @@ def success():
 
   else:
     return "Something went wrong. Please, try agin..."
-
-
-        
-
-
-
-
-
-
-
-
-
-
   
-
-
 
 @app.route('/checkout', methods=['GET', 'POST'])
 def checkout():
@@ -605,4 +599,4 @@ def imagepath(title):
 
 
 
-app.run(host='0.0.0.0', port=8080)
+app.run(host='0.0.0.0', port=8080, debug=True)
