@@ -15,6 +15,6 @@ A logged in user shopping cart can be viewed, edited, checked out or deleted. A 
 ### Features
 - [X] A new user can sign up.
 - [X] A logged in user can see his/her previous order history.
-- [X] The front end is user friendly: website is easy and intuitive to navigate, no server error messages are presented to to user (if an error occurs, give a user friendly message).
+- [X] The front end is user friendly: website is easy and intuitive to navigate, no server error messages are presented to user (if an error occurs, give a user friendly message).
 - [X] Website style: products have pictures.
 
