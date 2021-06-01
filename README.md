@@ -1,7 +1,8 @@
 
 # e-commerce Web App Demo
 
-https://github.com/EbrahimBonger/ecommerce-App/issues/1#issue-907778936
+![ecommerceAppDemo](https://user-images.githubusercontent.com/35973818/120252233-ed0b1c80-c251-11eb-876b-c346e7db7c19.gif)
+
 
 
 ## Application Requirements
