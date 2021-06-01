@@ -12,18 +12,6 @@ Only a logged in user can add products to a shopping cart and "buy" various quan
 
 A logged in user shopping cart can be viewed, edited, checked out or deleted. A logged in user can also see his/her orders history if there are any.
 
-## Implementation
-- Python Flask will be used for all the server side scripting.
-- The cart should be implemented with Session variables. Hint: the session should be based on the user login.
-  - This means the shopping cart should *not* be stored in your database.
-- Check user input: do not allow me to buy -2 boxes of detergent or, 100 boxes if you only have 1 in stock.
-- Keep minimum information about customers: username and password, first and last name. We are not interested in addresses at this point.
-- For the base level you can use sqlite as your database, but to earn a perfect score you must use mysql hosted on Amazon Web Services
-- For the base level you can use Repl.it to host your python web application, but to earn a perfect score you must run it on AWS.
-- If you use AWS you will need to ensure that it is continuously running until we perform grading!
-- Where details are not specified in the assignment, you should assume something "reasonable" that you think the client will expect.
-
-
 ### Features
 - [X] A new user can sign up.
 - [X] A logged in user can see his/her previous order history.
